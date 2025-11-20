@@ -1,4 +1,4 @@
-FROM nvidia/cuda:13.0.1-base-ubuntu22.04
+FROM nvidia/cuda:12.8.0-base-ubuntu22.04
 
 ENV PYTHON_VERSION=3.11
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
@@ -8,10 +8,11 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y update \
     && apt-get -y install --no-install-recommends \
-    python3.11=3.11.0~rc1-1~22.04 \
+    python3.11 \
+    python3-pip \
     git \
-    ffmpeg=7:4.4.2-0ubuntu0.22.04.1 \
-    libcudnn9-cuda-12=9.8.0.87-1 \
+    ffmpeg \
+    libcudnn9-cuda-12 \
     libatomic1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -32,7 +33,7 @@ COPY app/gunicorn_logging.conf .
 
 # Install Python dependencies using UV with pyproject.toml
 # UV automatically selects CUDA 12.8 wheels on Linux
-RUN uv sync --frozen --no-dev \
+RUN uv pip install --system -e . \
     && uv pip install --system ctranslate2==4.6.0 \
     && rm -rf /root/.cache /tmp/* /root/.uv /var/cache/* \
     && find /usr/local -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true \
