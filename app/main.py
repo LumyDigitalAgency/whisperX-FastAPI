@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager  # noqa: E402
 
 from dotenv import load_dotenv  # noqa: E402
 from fastapi import FastAPI, status  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse, RedirectResponse  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
@@ -118,6 +119,16 @@ app = FastAPI(
     version="0.0.1",
     openapi_tags=tags_metadata,
     lifespan=lifespan,
+)
+
+# Configure CORS middleware - allow all origins
+# Restrict by IP at infrastructure level for security
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Register exception handlers

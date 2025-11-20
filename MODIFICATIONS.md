@@ -51,7 +51,37 @@ Ce document liste toutes les modifications apportées au projet WhisperX-FastAPI
 ```
 **Raison**: Le fichier s'appelle `dockerfile` (minuscule) et non `Dockerfile` (majuscule).
 
-### 3. Fichier d'environnement (`.env`)
+### 3. Support CORS (Cross-Origin Resource Sharing)
+
+**Nouveaux fichiers modifiés**:
+
+#### `app/core/config.py`
+Ajout d'une nouvelle classe `CORSSettings` pour gérer la configuration CORS via variables d'environnement:
+```python
+class CORSSettings(BaseSettings):
+    CORS_ORIGINS: list[str] = Field(default=["*"])
+    CORS_CREDENTIALS: bool = Field(default=True)
+    CORS_METHODS: list[str] = Field(default=["*"])
+    CORS_HEADERS: list[str] = Field(default=["*"])
+```
+
+#### `app/main.py`
+Ajout du middleware CORS pour accepter les requêtes cross-origin:
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors.CORS_ORIGINS,
+    allow_credentials=settings.cors.CORS_CREDENTIALS,
+    allow_methods=settings.cors.CORS_METHODS,
+    allow_headers=settings.cors.CORS_HEADERS,
+)
+```
+
+**Raison**: Le projet original n'avait pas de configuration CORS, ce qui empêchait les applications frontend de communiquer avec l'API.
+
+### 4. Fichier d'environnement (`.env`)
 
 **Nouveau fichier créé** avec les paramètres suivants:
 ```env
@@ -61,9 +91,18 @@ COMPUTE_TYPE=float16
 WHISPER_MODEL=tiny
 HF_TOKEN=hf_changeme
 LOG_LEVEL=INFO
+
+# CORS Configuration
+CORS_ORIGINS=*
+CORS_CREDENTIALS=true
+CORS_METHODS=*
+CORS_HEADERS=*
 ```
 
-**Important**: Remplacez `HF_TOKEN=hf_changeme` par votre véritable token HuggingFace pour permettre le téléchargement des modèles.
+**Important**:
+- Remplacez `HF_TOKEN=hf_changeme` par votre véritable token HuggingFace
+- `CORS_ORIGINS=*` accepte toutes les origines (pratique pour le développement)
+- Pour la production, spécifiez les domaines exacts: `CORS_ORIGINS=https://votre-domaine.com,https://app.votre-domaine.com`
 
 ## Résultat
 

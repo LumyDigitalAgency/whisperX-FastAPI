@@ -96,6 +96,41 @@ class LoggingSettings(BaseSettings):
     )
 
 
+class CORSSettings(BaseSettings):
+    """CORS (Cross-Origin Resource Sharing) configuration settings."""
+
+    CORS_ORIGINS: list[str] = Field(
+        default=["*"],
+        description="List of allowed origins for CORS. Use ['*'] to allow all origins.",
+    )
+    CORS_CREDENTIALS: bool = Field(
+        default=True,
+        description="Allow credentials (cookies, authorization headers) in CORS requests",
+    )
+    CORS_METHODS: list[str] = Field(
+        default=["*"],
+        description="List of allowed HTTP methods for CORS",
+    )
+    CORS_HEADERS: list[str] = Field(
+        default=["*"],
+        description="List of allowed HTTP headers for CORS",
+    )
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: str | list[str] | None) -> list[str]:
+        """Parse CORS_ORIGINS from string or list."""
+        if v is None:
+            return ["*"]
+        if isinstance(v, str):
+            # Split comma-separated string into list
+            origins = [origin.strip() for origin in v.split(",") if origin.strip()]
+            return origins if origins else ["*"]
+        if isinstance(v, list):
+            return v
+        return ["*"]
+
+
 class Settings(BaseSettings):
     """Main application settings."""
 
@@ -120,6 +155,7 @@ class Settings(BaseSettings):
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     whisper: WhisperSettings = Field(default_factory=WhisperSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
+    cors: CORSSettings = Field(default_factory=CORSSettings)
 
     @field_validator("ENVIRONMENT", mode="before")
     @classmethod
