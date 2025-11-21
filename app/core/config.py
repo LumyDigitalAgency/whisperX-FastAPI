@@ -1,7 +1,7 @@
 """Configuration module for the WhisperX FastAPI application."""
 
 from functools import lru_cache
-from typing import Optional
+from typing import Any, Optional
 
 import torch
 from pydantic import Field, computed_field, field_validator, model_validator
@@ -99,7 +99,7 @@ class LoggingSettings(BaseSettings):
 class CORSSettings(BaseSettings):
     """CORS (Cross-Origin Resource Sharing) configuration settings."""
 
-    CORS_ORIGINS: list[str] = Field(
+    CORS_ORIGINS: Any = Field(
         default=["*"],
         description="List of allowed origins for CORS. Use ['*'] to allow all origins.",
     )
@@ -107,27 +107,34 @@ class CORSSettings(BaseSettings):
         default=True,
         description="Allow credentials (cookies, authorization headers) in CORS requests",
     )
-    CORS_METHODS: list[str] = Field(
+    CORS_METHODS: Any = Field(
         default=["*"],
         description="List of allowed HTTP methods for CORS",
     )
-    CORS_HEADERS: list[str] = Field(
+    CORS_HEADERS: Any = Field(
         default=["*"],
         description="List of allowed HTTP headers for CORS",
     )
 
-    @field_validator("CORS_ORIGINS", mode="before")
+    @field_validator("CORS_ORIGINS", "CORS_METHODS", "CORS_HEADERS", mode="before")
     @classmethod
-    def parse_cors_origins(cls, v: str | list[str] | None) -> list[str]:
-        """Parse CORS_ORIGINS from string or list."""
-        if v is None:
+    def parse_cors_list(cls, v: Any) -> list[str]:
+        """Parse CORS fields from string, list, or None."""
+        # Handle None or empty string
+        if v is None or v == "":
             return ["*"]
-        if isinstance(v, str):
-            # Split comma-separated string into list
-            origins = [origin.strip() for origin in v.split(",") if origin.strip()]
-            return origins if origins else ["*"]
+        # Already a list
         if isinstance(v, list):
-            return v
+            return v if v else ["*"]
+        # Parse string (comma-separated or single value)
+        if isinstance(v, str):
+            # Handle wildcard
+            if v.strip() == "*":
+                return ["*"]
+            # Split comma-separated values
+            items = [item.strip() for item in v.split(",") if item.strip()]
+            return items if items else ["*"]
+        # Fallback
         return ["*"]
 
 
