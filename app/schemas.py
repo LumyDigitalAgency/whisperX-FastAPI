@@ -183,6 +183,7 @@ class WhisperModel(str, Enum):
     distil_small_en = "distil-small.en"
     distil_large_v3 = "distil-large-v3"
     faster_crisper_whisper = "nyrahealth/faster_CrisperWhisper"
+    breton_large_v3_turbo = "Bretagne/whisper-large-v3-turbo-audio_breton-transcription_breton"
 
 
 class Device(str, Enum):
