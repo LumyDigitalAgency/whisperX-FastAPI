@@ -308,7 +308,7 @@ class WhisperModelParams(BaseModel):
         Query(
             default="en",  # Default language
             description="Language to transcribe",
-            enum=list(utils.LANGUAGES.keys()),
+            enum=list(utils.LANGUAGES.keys()) + ["br"],  # Standard languages + Breton
         )
     )
     task: TaskEnum = Field(
